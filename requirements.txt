@@ -1,7 +1,8 @@
 pandas
-scikit-learn 
-mlflow 
-dvc 
-fastapi 
+scikit-learn
+mlflow
+fastapi
 uvicorn
-evidently
+dvc
+numpy
+evidently==0.7.21
