@@ -1,16 +1,24 @@
 # src/train.py
+
 import sys
+import os
+import pickle
 import mlflow
 import mlflow.sklearn
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from data_preprocessing import load_data
-import pickle
-import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from src.data_preprocessing import load_data
 from monitoring.data_drift import detect_data_drift
 from monitoring.model_drift import detect_model_drift
+
+# -----------------------------
+# CONFIG
+# -----------------------------
+MODEL_NAME = "fraud-model"
 
 # -----------------------------
 # LOAD DATA
@@ -41,16 +49,17 @@ drift_detected = detect_data_drift()
 # -----------------------------
 # TRAIN NEW MODEL (Challenger)
 # -----------------------------
-with mlflow.start_run():
+with mlflow.start_run() as run:
 
     model = RandomForestClassifier(n_estimators=100)
     model.fit(X_train, y_train)
 
     new_acc = model.score(X_test, y_test)
-
     print("New model accuracy:", new_acc)
 
-    # MLflow logging
+    # -----------------------------
+    # LOG TO MLFLOW
+    # -----------------------------
     mlflow.log_param("n_estimators", 100)
     mlflow.log_metric("accuracy_new", new_acc)
     mlflow.log_metric("accuracy_old", old_acc)
@@ -62,23 +71,34 @@ with mlflow.start_run():
     model_drift = detect_model_drift(old_acc, new_acc)
 
     # -----------------------------
-    # MODEL SELECTION (Champion vs Challenger)
+    # MODEL SELECTION
     # -----------------------------
     if new_acc > old_acc:
-        print("New model is better → promoting to STAGING")
+        print("✅ New model better → Promote to STAGING")
 
         os.makedirs("models", exist_ok=True)
         with open("models/model.pkl", "wb") as f:
             pickle.dump(model, f)
 
-        mlflow.sklearn.log_model(model, "model")
+        # 🔥 Register model in MLflow
+        mlflow.sklearn.log_model(
+            model,
+            "model",
+            registered_model_name=MODEL_NAME
+        )
 
-        # Tag as staging
-        mlflow.set_tag("stage", "staging")
+        # Get latest version and move to STAGING
+        client = mlflow.tracking.MlflowClient()
+
+        latest_version = client.get_latest_versions(MODEL_NAME, stages=["None"])[0].version
+
+        client.transition_model_version_stage(
+            name=MODEL_NAME,
+            version=latest_version,
+            stage="Staging"
+        )
 
     else:
-        print("Old model retained")
-
-        mlflow.set_tag("stage", "production")
+        print("❌ Old model retained → stays in PRODUCTION")
 
 print("Pipeline complete")
