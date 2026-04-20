@@ -8,8 +8,8 @@ from data_preprocessing import load_data
 import pickle
 import os
 
-from monitoring.data_drift import detect_data_drift
-from monitoring.model_drift import detect_model_drift
+from data_drift import detect_data_drift
+from model_drift import detect_model_drift
 
 # -----------------------------
 # LOAD DATA
