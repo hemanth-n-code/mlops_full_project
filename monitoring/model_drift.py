@@ -1,6 +1,11 @@
+# monitoring/model_drift.py
 
-def check_drift(old_acc, new_acc):
-    drift = abs(old_acc - new_acc)
-    return drift
+def detect_model_drift(old_acc, new_acc, threshold=0.05):
+    drop = old_acc - new_acc
 
-print(check_drift(0.95, 0.80))
+    if drop > threshold:
+        print("Model drift detected")
+        return True
+    else:
+        print("No model drift")
+        return False

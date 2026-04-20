@@ -3,29 +3,28 @@
 import pandas as pd
 from scipy.stats import ks_2samp
 
-# Load data
-ref = pd.read_csv("data/raw/creditcard.csv").sample(2000, random_state=42)
-curr = pd.read_csv("data/raw/creditcard.csv").sample(2000, random_state=24)
+def detect_data_drift():
 
-# Simulate drift (IMPORTANT for demo)
-curr["Amount"] = curr["Amount"] * 2
+    ref = pd.read_csv("data/raw/creditcard.csv").sample(2000, random_state=42)
+    curr = pd.read_csv("data/raw/creditcard.csv").sample(2000, random_state=24)
 
-drift_results = []
+    # simulate drift
+    curr["Amount"] = curr["Amount"] * 2
 
-for col in ref.columns:
-    stat, p_value = ks_2samp(ref[col], curr[col])
-    drift = p_value < 0.05
-    drift_results.append((col, p_value, drift))
+    drift_results = []
+    drift_count = 0
 
-# Save simple HTML report
-html = "<h1>Data Drift Report</h1><table border=1><tr><th>Column</th><th>p-value</th><th>Drift</th></tr>"
+    for col in ref.columns:
+        stat, p_value = ks_2samp(ref[col], curr[col])
+        drift = p_value < 0.05
 
-for col, p, d in drift_results:
-    html += f"<tr><td>{col}</td><td>{p:.5f}</td><td>{d}</td></tr>"
+        if drift:
+            drift_count += 1
 
-html += "</table>"
+        drift_results.append((col, p_value, drift))
 
-with open("monitoring/drift_report.html", "w") as f:
-    f.write(html)
+    drift_detected = drift_count > 3  # threshold
 
-print("Drift report generated successfully!")
+    print(f"Drifted columns: {drift_count}")
+
+    return drift_detected

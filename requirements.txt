@@ -1,8 +1,9 @@
 pandas
+numpy
 scikit-learn
 mlflow
 fastapi
 uvicorn
 dvc
-numpy
+scipy
 evidently==0.7.21
