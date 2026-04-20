@@ -2,9 +2,14 @@ import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from data_preprocessing import load_data
+from src.data_preprocessing import load_data
 import pickle
 import os
+
+# ✅ Check if dataset exists
+if not os.path.exists("data/raw/creditcard.csv"):
+    print("Dataset not found → skipping training (CI safe)")
+    exit()
 
 X, y = load_data()
 
@@ -23,7 +28,8 @@ with mlflow.start_run():
     mlflow.log_metric("accuracy", acc)
 
     os.makedirs("models", exist_ok=True)
-    pickle.dump(model, open("models/model.pkl", "wb"))
+    with open("models/model.pkl", "wb") as f:
+        pickle.dump(model, f)
 
     mlflow.sklearn.log_model(model, "model")
 
