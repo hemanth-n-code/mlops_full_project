@@ -1,5 +1,5 @@
 # src/train.py
-
+import sys
 import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
@@ -7,9 +7,10 @@ from sklearn.model_selection import train_test_split
 from data_preprocessing import load_data
 import pickle
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from data_drift import detect_data_drift
-from model_drift import detect_model_drift
+from monitoring.data_drift import detect_data_drift
+from monitoring.model_drift import detect_model_drift
 
 # -----------------------------
 # LOAD DATA
