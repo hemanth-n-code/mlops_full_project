@@ -2,7 +2,7 @@ import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from src.data_preprocessing import load_data
+from data_preprocessing import load_data
 import pickle
 import os
 
