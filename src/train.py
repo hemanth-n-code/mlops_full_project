@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.data_preprocessing import load_data
+from data_preprocessing import load_data
 from monitoring.data_drift import detect_data_drift
 from monitoring.model_drift import detect_model_drift
 
